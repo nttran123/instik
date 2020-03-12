@@ -25,7 +25,6 @@ export default {
     name: 'Home',
     data(){
         return{
-
         }
     },
     beforeCreate() {
@@ -39,7 +38,6 @@ export default {
         max-width: 40%;
         max-height: 20px;
         background: #F3F3F3;
-
     }
     h2{
         font-size: 6em;
