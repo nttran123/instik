@@ -7,6 +7,7 @@
                 New Post
             </router-link>
         </div>
+        <Loading v-if="!posts"/>
         <AllPosts :posts="posts" />
     </div>
 </template>
@@ -16,11 +17,13 @@ import db from '@/firebase/init'
 import firebase from 'firebase'
 import moment from 'moment'
 import AllPosts from '@/components/post/AllPosts'
+import Loading from '@/components/Dialog/Loading'
 
 export default {
     name: 'HomeUser',
     components: {
-        AllPosts
+        AllPosts,
+        Loading
     },
     data(){
         return {

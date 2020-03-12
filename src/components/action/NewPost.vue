@@ -19,49 +19,7 @@
                     <div class="field choose-image">
                         <input type="file" @change="uploadImage">
                     </div>
-                    <!--Loading cycle-->
-                    <div class="preloader-wrapper small active send-loading" v-if="clickSend">
-                        <div class="spinner-layer spinner-blue">
-                          <div class="circle-clipper left">
-                            <div class="circle"></div>
-                          </div><div class="gap-patch">
-                            <div class="circle"></div>
-                          </div><div class="circle-clipper right">
-                            <div class="circle"></div>
-                          </div>
-                        </div>
-
-                        <div class="spinner-layer spinner-red">
-                          <div class="circle-clipper left">
-                            <div class="circle"></div>
-                          </div><div class="gap-patch">
-                            <div class="circle"></div>
-                          </div><div class="circle-clipper right">
-                            <div class="circle"></div>
-                          </div>
-                        </div>
-
-                        <div class="spinner-layer spinner-yellow">
-                          <div class="circle-clipper left">
-                            <div class="circle"></div>
-                          </div><div class="gap-patch">
-                            <div class="circle"></div>
-                          </div><div class="circle-clipper right">
-                            <div class="circle"></div>
-                          </div>
-                        </div>
-                        <div class="spinner-layer spinner-green">
-                          <div class="circle-clipper left">
-                            <div class="circle"></div>
-                          </div>
-                          <div class="gap-patch">
-                            <div class="circle"></div>
-                          </div>
-                          <div class="circle-clipper right">
-                            <div class="circle"></div>
-                          </div>
-                        </div>
-                    </div>
+                    <Loading v-if="clickSend" />
                     <div id="preview" v-if="uploadSuccess">
                         <img v-if="imageUrl" :src="imageUrl" />
                     </div>
@@ -82,10 +40,14 @@
 import db from '@/firebase/init'
 import firebase from 'firebase'
 import ErrorDialog from '@/components/Dialog/ErrorDialog'
+import Loading from '@/components/Dialog/Loading'
 
 export default {
     name: 'NewPost',
-    components: { ErrorDialog },
+    components: { 
+        ErrorDialog,
+        Loading
+     },
     data(){
         return{
             newPost: {
@@ -194,11 +156,6 @@ export default {
     }
     .choose-image{
         margin-left: 1em;
-    }
-    .send-loading{
-        display: inline-block;
-        margin-top:1em;
-        margin-left: 48%;
     }
     .noti{
         text-align: center;
