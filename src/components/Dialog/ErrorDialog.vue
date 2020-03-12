@@ -9,7 +9,7 @@ export default {
     name: 'ErrorDialog',
     props: {
         textMsg: {
-            type: Object,
+            type: String,
             default: null
         }
     },

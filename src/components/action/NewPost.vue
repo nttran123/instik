@@ -19,11 +19,57 @@
                     <div class="field choose-image">
                         <input type="file" @change="uploadImage">
                     </div>
+                    <!--Loading cycle-->
+                    <div class="preloader-wrapper small active send-loading" v-if="clickSend">
+                        <div class="spinner-layer spinner-blue">
+                          <div class="circle-clipper left">
+                            <div class="circle"></div>
+                          </div><div class="gap-patch">
+                            <div class="circle"></div>
+                          </div><div class="circle-clipper right">
+                            <div class="circle"></div>
+                          </div>
+                        </div>
+
+                        <div class="spinner-layer spinner-red">
+                          <div class="circle-clipper left">
+                            <div class="circle"></div>
+                          </div><div class="gap-patch">
+                            <div class="circle"></div>
+                          </div><div class="circle-clipper right">
+                            <div class="circle"></div>
+                          </div>
+                        </div>
+
+                        <div class="spinner-layer spinner-yellow">
+                          <div class="circle-clipper left">
+                            <div class="circle"></div>
+                          </div><div class="gap-patch">
+                            <div class="circle"></div>
+                          </div><div class="circle-clipper right">
+                            <div class="circle"></div>
+                          </div>
+                        </div>
+                        <div class="spinner-layer spinner-green">
+                          <div class="circle-clipper left">
+                            <div class="circle"></div>
+                          </div>
+                          <div class="gap-patch">
+                            <div class="circle"></div>
+                          </div>
+                          <div class="circle-clipper right">
+                            <div class="circle"></div>
+                          </div>
+                        </div>
+                    </div>
+                    <div id="preview" v-if="uploadSuccess">
+                        <img v-if="imageUrl" :src="imageUrl" />
+                    </div>
                     <div v-if="showLog">
                         <ErrorDialog :textMsg="messages"/>
                     </div>   
                     <div class="field center">
-                        <button class="btn pink lighten-1">
+                        <button class="btn pink lighten-1 send-post">
                             Send
                         </button>
                     </div>
@@ -48,12 +94,17 @@ export default {
                 user_id: null
             },
             messages: null,
-            showLog: false
+            showLog: false,
+            imageUrl: null,
+            uploadSuccess: false,
+            clickSend: false
         }
     },
     methods: {
         uploadImage(e){
-            let file = e.target.files[0]
+            const file = e.target.files[0]
+            this.imageUrl = URL.createObjectURL(file)
+            this.clickSend = true
             //store image in a folder named: user_avatar in firestore
             var storageRef = firebase.storage().ref('user_post/'+file.name)
 
@@ -62,6 +113,7 @@ export default {
             uploadTask.on('state_changed', (snapshot) => {
                 this.showLog = true
                 this.messages = 'Please wait until the image upload successfully! (3~5s)'
+                this.uploadSuccess = false
             }, (error) => {
                 this.showLog = true
                 this.messages = error
@@ -72,6 +124,8 @@ export default {
                     this.newPost.image = downloadURL
                     this.showLog = true
                     this.messages = 'Update image successfully'
+                    this.uploadSuccess = true
+                    this.clickSend = false
                 })
             })
 
@@ -126,11 +180,12 @@ export default {
         background-color: white;
     }
     .new-post-title{
-        margin-top: 1em;
+        margin-top: .5em;
         font-size: 3em;
     }
     .row{
-        height: 15em;
+        height: auto;
+        margin-bottom: 2em;
     }
     .up-image{
         width: 40%;
@@ -140,7 +195,27 @@ export default {
     .choose-image{
         margin-left: 1em;
     }
+    .send-loading{
+        display: inline-block;
+        margin-top:1em;
+        margin-left: 48%;
+    }
     .noti{
         text-align: center;
+    }
+    
+    #preview {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 1em;
+    }
+
+    #preview img {
+      max-width: 100%;
+      max-height: 500px;
+    }
+    .send-post{
+        margin: 1em;
     }
 </style>
