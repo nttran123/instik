@@ -5,8 +5,9 @@
                 <router-link :to="{ name: 'HomeUser'}" class="brand-logo logo">
                     Instik
                 </router-link>
+                <a href="#" data-target="mobile-demo" class="sidenav-trigger"><i class="material-icons">menu</i></a>
     
-                <ul data-target="mobile-demo" class="left hide-on-med-and-down sidenav-trigger">
+                <ul data-target="mobile-demo" class="right hide-on-med-and-down sidenav-trigger">
                     <li><a href="#"><i class="material-icons">menu</i></a></li>
                 </ul>
             </div>
