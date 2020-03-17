@@ -1,14 +1,21 @@
 <template>
     <div class="home-user container">
-        <div>
-            <router-link 
-                :to="{name: 'NewPost' }" 
-                class="btn-small pink lighten-1 new-post-btn ">
+        <div class="new-post">
+            <el-button
+                @click="showNewPost"
+                v-if="!showFormNewPost"
+            >
                 New Post
-            </router-link>
+            </el-button>
+
+            <div v-if="showFormNewPost">
+                <NewPost @handleEvent="handleEvent" />
+            </div>
         </div>
-        <Loading v-if="!posts"/>
-        <AllPosts :posts="posts" />
+        <div class="container-list">
+            <Loading v-if="!posts"/>
+            <AllPosts :posts="posts" />
+        </div>
     </div>
 </template>
 
@@ -18,12 +25,14 @@ import firebase from 'firebase'
 import moment from 'moment'
 import AllPosts from '@/components/post/AllPosts'
 import Loading from '@/components/Dialog/Loading'
+import NewPost from '@/components/action/NewPost'
 
 export default {
     name: 'HomeUser',
     components: {
         AllPosts,
-        Loading
+        Loading,
+        NewPost
     },
     data(){
         return {
@@ -32,11 +41,21 @@ export default {
             current_user_slug: null,
             followers:[],
             follower_posts: [],
-            unfollower_posts: []
+            unfollower_posts: [],
+            showFormNewPost: false
         }
     },
     methods: {
-
+        showNewPost() {
+            // Ẩn hiện form new post
+            this.showFormNewPost = true
+        },
+        handleEvent(event, data) {
+            // Lắng nghe sự kiện từ component con
+            if (event === 'closeFormNewPost') {
+                this.showFormNewPost = false
+            }
+        },
         follow(id){
             //find user_id of this post by post.id
             for (let i in this.posts) 
@@ -248,6 +267,20 @@ export default {
       
 }
 </script>
+
+<style scoped>
+    .home-user .new-post, .home-user .container-list {
+        width: 100%;
+        float: left;
+    }
+
+    .home-user .new-post .el-button {
+        background-color: #ee6e73;
+        width: 100%;
+        font-size: 20px;
+        padding: 5px;
+    }
+</style>
 
 <style>
     .home-user{

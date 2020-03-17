@@ -144,6 +144,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+$cursor: pointer;
 .login-container {
     min-height: 100%;
     width: 100%;
@@ -161,6 +162,7 @@ export default {
         margin-top: 50px;
 
         .btn-submit {
+            cursor: $cursor;
             width: 100%;
             border: none;
             border-radius: 7px;
@@ -169,6 +171,7 @@ export default {
             background: #ec407a;
             color: #ffffff;
             margin-top: 20px;
+            
         }
     }
 }

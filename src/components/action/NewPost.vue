@@ -1,38 +1,66 @@
 <template>
-    <div class="new-post container">
-        <div class="pink lighten-1">
-            <h2 class="center white-text new-post-title">
-                New Post
-            </h2>
-        </div>
-            <form @submit.prevent="sendPost">
-                <div class="row">
-                    <div class="input-field col s12">
-                    <textarea id="textarea1" 
-                        class="materialize-textarea" 
-                        v-model="newPost.title">
-                    </textarea>
-                    <label for="textarea1" class='active'>
-                        Title
-                    </label>
-                    </div>
-                    <div class="field choose-image">
-                        <input type="file" @change="uploadImage">
-                    </div>
-                    <Loading v-if="clickSend" />
-                    <div id="preview" v-if="uploadSuccess">
-                        <img v-if="imageUrl" :src="imageUrl" />
-                    </div>
-                    <div v-if="showLog">
-                        <ErrorDialog :textMsg="messages"/>
-                    </div>   
-                    <div class="field center">
-                        <button class="btn pink lighten-1 send-post">
-                            Send
-                        </button>
-                    </div>
-                </div>
-            </form>
+    <div class="new-post-container">
+        <el-form
+            ref="newPostForm"
+            :model="newPostForm"
+            :rules="newPostRule"
+            class="new-post-form"
+            autocomplete="on"
+            label-position="left"
+        >
+            <el-form-item prop="title">
+                <label>Title</label>
+                <el-input
+                    ref="title"
+                    v-model="newPostForm.title"
+                    type="textarea"
+                    :rows="2"
+                    placeholder="Please enter content..."
+                    class="new-post-form-title"
+                    autocomplete="on"
+                    label-position="left"
+                />
+            </el-form-item>
+            <el-form-item prop="file">
+                <input
+                    ref="fileInput"
+                    type="file"
+                    name="file"
+                    class="new-post-form-input-file"
+                    placeholder="Select picture"
+                    :class="{hidden: selectedPicture}"
+                    @change="handlePreview"
+                />
+                <img
+                    v-if="showImage"
+                    class="preview-image"
+                    :src="srcImage"
+                    @click="handleChangeImage"
+                />
+            </el-form-item>
+
+            <div v-if="showLog">
+                <ErrorDialog :textMsg="messages"/>
+            </div>
+
+            <div class="form-footer">
+                <el-button
+                    class="btn-cancel"
+                    :loading="loading"
+                    @click="closeFormNewPost"
+                >
+                    Cancel
+                </el-button>
+
+                <el-button
+                    class="btn-submit"
+                    :loading="loading"
+                    @click="handleUpload"
+                >
+                    Save
+                </el-button>
+            </div>
+        </el-form>
     </div>
 </template>
 
@@ -44,78 +72,110 @@ import Loading from '@/components/Dialog/Loading'
 
 export default {
     name: 'NewPost',
-    components: { 
+    components: {
         ErrorDialog,
         Loading
      },
     data(){
         return{
-            newPost: {
-                title: null,
-                image: null,
-                user_id: null
-            },
-            messages: null,
+            srcImage: '',
+            showImage: false,
+            selectedPicture: false,
             showLog: false,
-            imageUrl: null,
-            uploadSuccess: false,
-            clickSend: false
+            messages: '',
+            loading: false,
+            newPostForm: {
+                title: '',
+                user_id: null,
+                file: null
+            },
+            newPostRule: {
+                title: [{ required: true, trigger: 'blur' }]
+            }
         }
     },
     methods: {
-        uploadImage(e){
-            const file = e.target.files[0]
-            this.imageUrl = URL.createObjectURL(file)
-            this.clickSend = true
-            //store image in a folder named: user_avatar in firestore
-            var storageRef = firebase.storage().ref('user_post/'+file.name)
-
-            let uploadTask =  storageRef.put(file)
-
-            uploadTask.on('state_changed', (snapshot) => {
-                this.showLog = true
-                this.messages = 'Please wait until the image upload successfully! (3~5s)'
-                this.uploadSuccess = false
-            }, (error) => {
-                this.showLog = true
-                this.messages = error
-            }, () => 
-            {
-                //get the image link and set it to newAva
-                uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                    this.newPost.image = downloadURL
-                    this.showLog = true
-                    this.messages = 'Update image successfully'
-                    this.uploadSuccess = true
-                    this.clickSend = false
-                })
-            })
-
+        handleChangeImage() {
+            this.$refs.fileInput.click()
         },
-        sendPost(){
-            if(this.newPost.title)
-            {
-                db.collection('posts').add({
-                    title: this.newPost.title,
-                    image: this.newPost.image,
-                    timestamp: Date.now(),
-                    user_id: this.newPost.user_id,
-                    like: 0,
-                }).then(() => 
-                {
-                    this.$router.push({name: 'HomeUser'}) //redirect to the user home page
-                }).catch(err => 
-                {
-                    this.showLog = true
-                    this.messages = err
-                })
+        handlePreview(event) {
+            var file = event.target.files[0]
+
+            if (file) {
+                this.newPostForm.file = file
+                this.srcImage = URL.createObjectURL(file)
+                this.showImage = true
+                this.selectedPicture = true
             }
-            else
-            {
+        },
+        handleUpload() {
+            console.log('handleUpload')
+            this.$refs.newPostForm.validate(valid => {
+                if (valid) {
+                    this.loading = true
+                    this.showLog = false
+
+                    if (this.newPostForm.file) {
+                        // Upload image
+                        var storageRef = firebase.storage().ref('user_post/'+this.newPostForm.file.name)
+                        var uploadTask =  storageRef.put(this.newPostForm.file)
+
+                        uploadTask.on('state_changed', (snapshot) => {
+                            this.showLog = true
+                            this.messages = 'Please wait until the image upload successfully! (3~5s)'
+                            this.uploadSuccess = false
+                        }, (error) => {
+                            this.showLog = true
+                            this.messages = error
+                        }, () => 
+                        {
+                            //get the image link and set it to newAva
+                            uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                                this.showLog = true
+                                this.messages = 'Update image successfully'
+
+                                // Save post
+                                this.savePost(this.newPostForm.user_id, this.newPostForm.title, downloadURL)
+                            })
+                        })
+                    } else {
+                        // Save post
+                        this.savePost(this.newPostForm.user_id, this.newPostForm.title, null)
+                    }
+                }
+            })
+        },
+        savePost(user_id, title, image) {
+            db.collection('posts').add({
+                title: title,
+                image: image,
+                timestamp: Date.now(),
+                user_id: user_id,
+                like: 0,
+            })
+            .then(() =>  {
+                this.closeFormNewPost('')
+            })
+            .catch(err =>  {
                 this.showLog = true
-                this.messages = "Please enter the post title"
+                this.messages = err
+            })
+        },
+        closeFormNewPost(data) {
+            // Reset value
+            this.selectedPicture = false
+            this.showImage = false
+            this.srcImage = ''
+
+            if (!data) {
+                data = ''
             }
-        }
+            // Emit về component cha.
+            // Parameter 1: method đc khai báo tại component cha trong phần giao diện lúc add component con vào
+            // Parameter 2: event
+            // Parameter 3: data
+            this.$emit('handleEvent', 'closeFormNewPost', '')
+        },
     },
     beforeCreate(){
         document.body.className = "body-bg-no-image";
@@ -125,54 +185,91 @@ export default {
         {
             if(user)
             {
-                this.newPost.user_id = user.uid;                
+                this.newPostForm.user_id = user.uid;
             }
             else
             {
-                this.newPost.user_id = null
+                this.newPostForm.user_id = null
             }
         })
-
     }
 }
 </script>
 
-<style>
-    .new-post{
-        background-color: white;
+<style scoped>
+.new-post-container .el-form .el-form-item .new-post-form-input-file.hidden {
+        display: none;
     }
-    .new-post-title{
-        margin-top: .5em;
-        font-size: 3em;
-    }
-    .row{
-        height: auto;
-        margin-bottom: 2em;
-    }
-    .up-image{
-        width: 40%;
-        margin-left: 1em;
-        margin-bottom: 1em;
-    }
-    .choose-image{
-        margin-left: 1em;
-    }
-    .noti{
-        text-align: center;
-    }
-    
-    #preview {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 1em;
+    .new-post-container {
+        width: 100%;
+        float: left;
+        background: #6d86a0;
+        border-radius: 5px;
     }
 
-    #preview img {
-      max-width: 100%;
-      max-height: 500px;
+    .new-post-container .el-form {
+        padding: 5px;
+        border-radius: 8px;
     }
-    .send-post{
-        margin: 1em;
+
+    .new-post-container .el-form .el-form-item {
+        width: 100%;
+        float: left;
+    }
+
+    .new-post-container .el-form .el-form-item label {
+        font-size: 18px;
+        color: #000000;
+    }
+
+    .new-post-container .el-form .el-form-item .new-post-form-title {
+        background: #ffffff;
+        border-radius: 5px;
+        padding: 5px;
+        margin-bottom: 10px;
+    }
+
+    .new-post-container .el-form .el-form-item .preview-image {
+        width: 150px;
+        height: 150px;
+        float: left;
+        padding: 5px;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .new-post-container .el-form .form-footer {
+        width: 100%;
+        float: left;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .new-post-container .el-form .form-footer .el-button {
+        font-size: 18px;
+        width: 100px;
+        line-height: 30px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    .new-post-container .el-form .el-button.btn-submit {
+        background: #61bdea;
+    }
+
+    .new-post-container .el-form .el-button.btn-cancel {
+        background: #dddddd;
+    }
+</style>
+
+<style lang="scss">
+    .new-post-container .el-form .el-form-item {
+        .new-post-form-title textarea {
+            border: none!important;
+        }
+    }
+
+    .el-form-item__error {
+        color: #ff0000
     }
 </style>
