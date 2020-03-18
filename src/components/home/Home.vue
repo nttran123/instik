@@ -14,7 +14,7 @@
         </p>
         <p class="btn-large pink lighten-1 btn-start">
             <router-link :to="{ name: 'Register' }">
-                <span>START NOW</span>
+                <span class="btn-start-text">START NOW</span>
             </router-link>
         </p>   
     </div>
@@ -51,7 +51,7 @@ export default {
         margin: 10px 30%;
         font-size: 1em;
     }
-    span{
+    .btn-start-text{
         color: white;
     }
     

@@ -1,7 +1,6 @@
 <template>
     <div class="profile container"
         v-if="profile">
-
         <div class="wallpaper">
             <img class="user-wallpaper" src="@/assets/bg.jpg">
         </div>
@@ -17,20 +16,25 @@
                 {{profile.fullname}}
             </h2>
             <ul>
-                <li><a href="">Follower </a><span>90000</span></li>
-                <li><a href="">Following </a><span>100</span></li>
+                <li>Follower <span>90000</span></li>
+                <li>Following <span>100</span></li>
                 <li v-if="loggedUser"><router-link 
                     :to="{ name: 'EditUserProfile', params: {id: this.profile.id}}">
                     Edit Information
                 </router-link>
                 </li>
             </ul>
-            <div>
-                <router-link 
-                    :to="{name: 'NewPost' }" 
-                    class="btn-small pink lighten-1 btn-new-post ">
+            <div class="new-post">
+                <el-button
+                    @click="showNewPost"
+                    v-if="!showFormNewPost"
+                >
                     New Post
-                </router-link>
+                </el-button>
+
+                <div v-if="showFormNewPost">
+                    <NewPost @handleEvent="handleEvent" />
+                </div>
             </div>
             <div class="album" 
                 v-if="posts">
@@ -46,18 +50,33 @@ import firebase from 'firebase'
 import db from '@/firebase/init'
 import moment from 'moment'
 import AllPosts from '@/components/post/AllPosts'
+import NewPost from '@/components/action/NewPost'
 
 export default {
     name: 'UserProfile',
     components: {
-        AllPosts
+        AllPosts,
+        NewPost
     },
     data(){
         return{
             profile: null,
             loggedUser: false,
-            posts:  []
+            posts:  [],
+            showFormNewPost: false
         }
+    },
+    methods: {
+        showNewPost() {
+            // Ẩn hiện form new post
+            this.showFormNewPost = true
+        },
+        handleEvent(event, data) {
+            // Lắng nghe sự kiện từ component con
+            if (event === 'closeFormNewPost') {
+                this.showFormNewPost = false
+            }
+        },
     },
     beforeCreate(){
         document.body.className = "body-bg-no-image";
@@ -116,7 +135,8 @@ export default {
 }
 </script>
 
-<style>
+
+<style scoped>
     .profile{
         box-shadow:0px 0px 20px grey;
         position: relative;
@@ -190,11 +210,21 @@ export default {
         margin-right: 5em;
         margin-top:0.5em;
     }
-    .btn-new-post{
-        display: block;
-        margin: auto;
-        width: 95%;
+    .new-post .el-button{
+        background-color: #ee6e73;
+        width: 100%;
+        font-size: 20px;
+        padding: 5px;
+        font-size: 20px;
+        color: white;
+        border: none;
+        cursor: pointer;
     }
+    .new-post:after { 
+    content: " "; 
+    display: block;
+    clear: both;
+} 
     .album{
         border-top: 3px solid black;
         margin: 1em;

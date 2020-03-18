@@ -198,12 +198,12 @@ export default {
 
 <style scoped>
 .new-post-container .el-form .el-form-item .new-post-form-input-file.hidden {
-        display: none;
+        display: block;
     }
     .new-post-container {
         width: 100%;
         float: left;
-        background: #6d86a0;
+        background: #EE6E73;
         border-radius: 5px;
     }
 

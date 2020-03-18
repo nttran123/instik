@@ -50,19 +50,8 @@ export default {
             user_info: null
         }
     },
-    //log user out and redirect to login page
     methods: {
-        // !!! CÓ CẦN GIỮ LẠI CÁI NÀY KHÔNG, LOGOUT() CÓ Ở BÊN SideBar.vue 
 
-        // logOut() {
-        //     firebase.auth().signOut().then(() => {
-        //         this.$router.push({
-        //                 name: 'Login'
-        //             }),
-        //             this.user = null,
-        //             this.user_info = null
-        //     })
-        // }
     },
 
     //get data of a current user from database before render

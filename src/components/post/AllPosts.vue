@@ -64,6 +64,9 @@ export default {
 </script>
 
 <style>
+    .post{
+        margin-top: 1em;
+    }
     .newsfeed-av{
         border: 5px solid rgb(218, 218, 218);
         border-radius: 50%;
