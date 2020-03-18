@@ -14,7 +14,13 @@
         </div>
         <div class="container-list">
             <Loading v-if="!posts"/>
-            <AllPosts :posts="posts" />
+            <AllPosts :posts="posts"
+                      :current_user_id = "current_user_id"
+                      :current_user_slug = "current_user_slug"
+                      :followers = "followers"
+                      :follower_posts = "follower_posts"
+                      :unfollower_posts = "unfollower_posts"
+            />
         </div>
     </div>
 </template>
@@ -54,81 +60,6 @@ export default {
             // Lắng nghe sự kiện từ component con
             if (event === 'closeFormNewPost') {
                 this.showFormNewPost = false
-            }
-        },
-        follow(id){
-            //find user_id of this post by post.id
-            for (let i in this.posts) 
-            {
-                if (this.posts[i].id == id) 
-                {
-                    //check if 'followers' array empty or does not exist
-                    if(this.followers.length == 0)
-                    {
-                        //push user_id of this post to another array named 'followers'
-                        this.followers.push(this.posts[i].user_id)
-                        //change the value of 'has_been_followed' in 'posts' array to true
-                        this.posts[i].has_been_followed = true
-                        console.log(this.followers)
-                        //update new information for the firebase document named 'followers'
-                        db.collection('followers').doc(this.current_user_slug).update({
-                            user_id: this.current_user_id,
-                            //get data from 'followers' array and transfer to 'followers' field in firebase
-                            followers: this.followers 
-                        })
-                    }
-                    //if already has follower(s)
-                    else
-                    {
-                        //check if 'followers' array already has this post's user_id
-                        if(this.followers.includes(this.posts[i].user_id))
-                        {
-                            alert("You have already follow this person")
-                        }
-                        //if not, do the same things as above to get follower_id and update to 'followers' field in firebase
-                        else{
-                            this.followers.push(this.posts[i].user_id)
-                            this.posts[i].has_been_followed = true
-                            console.log(this.followers)
-                            db.collection('followers').doc(this.current_user_slug).update({
-                                user_id: this.current_user_id,
-                                followers: this.followers
-                            })
-                        }
-                    }    
-                }
-            }
-
-        },
-
-        likePost(id){
-            //run for loop to find current post data by post.id
-            for (var i in this.posts) 
-            {
-                if (this.posts[i].id == id) 
-                {
-                    if(this.posts[i].has_been_liked == false)
-                    {
-                        this.posts[i].like++; //increse like by 1
-                        this.posts[i].has_been_liked = true; 
-                        //send to database
-                        db.collection('posts').doc(id).update({
-                        like: this.posts[i].like
-                        })                   
-                        break; //Stop this loop
-                    }
-                    else
-                    {
-                        this.posts[i].like--; //decrease like by 1
-                        this.posts[i].has_been_liked = false;
-                        //send to database
-                        db.collection('posts').doc(id).update({
-                        like: this.posts[i].like
-                        })
-                    break; //Stop this loop
-                    }
-                    
-                }
             }
         }
     },
