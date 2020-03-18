@@ -84,53 +84,62 @@ export default {
         let ref = db.collection('users')
         ref.doc(this.$route.params.id).get().then(user => 
         {
-            this.profile =user.data()
-            this.profile.id = user.id 
-            this.profileUserId = user.data().user_id
-            let postdb = db.collection('posts').where('user_id', '==', this.profileUserId)
-            postdb.get().then(snapshot => 
+            if(user)
             {
-                if(snapshot){
-                snapshot.forEach(doc =>
-                    {
-                        let post = doc.data()
-                        post.id = doc.id
-                        this.posts.push({
-                            id: post.id,
-                            image: post.image,
-                            like: post.like,
-                            //using moment extension to format dates
-                            timestamp: moment(doc.data().timestamp).format('lll'), 
-                            title: post.title,
-                            user_id: post.user_id,
-                            ava: this.profile.avatar,
-                            userName: this.profile.fullname,
-                            user_slug: this.profile.id,
+                this.profile =user.data()
+                this.profile.id = user.id 
+                this.profileUserId = user.data().user_id
+                //get all post of this user
+                let postdb = db.collection('posts').where('user_id', '==', this.profileUserId)
+                postdb.get().then(snapshot => 
+                {
+                    if(snapshot){
+                    snapshot.forEach(doc =>
+                        {
+                            let post = doc.data()
+                            post.id = doc.id
+                            this.posts.push({
+                                id: post.id,
+                                image: post.image,
+                                like: post.like,
+                                //using moment extension to format dates
+                                timestamp: moment(doc.data().timestamp).format('lll'), 
+                                title: post.title,
+                                user_id: post.user_id,
+                                ava: this.profile.avatar,
+                                userName: this.profile.fullname,
+                                user_slug: this.profile.id,
+                            })
                         })
-                    })
-                }
-            })
+                    }
+                })
+                //check if this user-profile page a current user to trigger dit user information link
+                firebase.auth().onAuthStateChanged((currentUser) => {
+                    if (currentUser) 
+                    {
+                        let userdb = db.collection('users').where('user_id', '==', currentUser.uid)
+                        userdb.get().then(userDetect => {
+                            if(userDetect) 
+                            {
+                                userDetect.forEach(userDoc => {
+                                        if (userDoc.id == this.profile.id) 
+                                        {
+                                            this.loggedUser = true
+                                        }
+                                })
+                            }
+                        })
+                    } 
+                    else 
+                    {
+                        this.user = null
+                    }
+                })
+            }
         })
 
     },
     created(){
-        firebase.auth().onAuthStateChanged((currentUser) => {
-            if (currentUser) {
-                let ref = db.collection('users').where('user_id', '==', currentUser.uid)
-                ref.get().then(snapshot => {
-                    if (snapshot) {
-                        snapshot.forEach(doc => {
-                            if (doc.id == this.profile.id) {
-                                this.loggedUser = true
-                            }
-
-                        })
-                    }
-                })
-            } else {
-                this.user = null
-            }
-        })
     }
 }
 </script>
